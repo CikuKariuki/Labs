@@ -269,6 +269,7 @@ FROM
     vendors
         JOIN
     invoices USING (vendor_id);
+    
 /* Write a select statement that returns these four columns: vendor_name, invoice_number, 
 invoice_date, balance_due (invoice_total - payment_total - credit_total). Return only (11)
 rows with a non-zero balance. Sort the results by vendor_name. */
@@ -284,20 +285,85 @@ FROM
 WHERE
     invoice_total - payment_total - credit_total > 0
 ORDER BY vendor_name;
+
 /* Write a select statement that returns these three columns: vendor_name, default_account,
 account_description. Return 1 row for each vendor(should be 122 rows). Sort by account_description, 
 then vendor_name. */
-select vendor_name, default_account, account_description from vendors v
-join general_ledger_account
+SELECT 
+    vendor_name, default_account_number, account_description
+FROM
+    vendors v
+        JOIN
+    general_ledger_accounts gl ON v.default_account_number = gl.account_number
+ORDER BY account_description;
+
 /* Write a select statement that returns these 5 columns: vendor_name, invoice_date, 
 invoice_number, invoice_sequence, line_item_amount. This should return 118 rows. Sort the 
 result by vendor_name, invoice_date, invoice_number and invoice_sequence. */
+SELECT 
+    vendor_name,
+    invoice_date,
+    invoice_number,
+    invoice_sequence,
+    line_item_amount
+FROM
+    vendors v
+        JOIN
+    invoices i ON v.vendor_id = i.vendor_id
+        JOIN
+    invoice_line_items li ON i.invoice_id = li.invoice_id
+ORDER BY vendor_name , invoice_date , invoice_number , invoice_sequence;
+
 /* Write a select statement that returns these 3 columns: vendor_id, vendor_name, 
 contact_name( concat vendors' first and last names). Return one row for each vendor whose 
 contact has the same last name. Sort the result by last names. */
+SELECT 
+    v.vendor_id,
+    vendor_name,
+    CONCAT(vc1.first_name, ' ', vc1.last_name) AS contact_name
+FROM
+    vendors v
+        JOIN
+    vendor_contacts vc1 ON v.vendor_id = vc1.vendor_id
+        JOIN
+    vendor_contacts vc2 ON vc1.vendor_id = vc2.vendor_id
+        AND vc1.last_name <> vc2.last_name
+ORDER BY vc1.last_name;
+
 /* Write a select statement that returns these 3 columns: account_number, account_description,
 invoice_id. Return one row for each account number that has never been used. This should return
 54 rows. Remove the invoice_id column from the select clause. sort the result by account_number. */
+SELECT 
+    gl.account_number, account_description, invoice_id
+FROM
+    general_ledger_accounts gl
+        LEFT JOIN
+    invoice_line_items li ON gl.account_number = li.account_number
+WHERE
+    li.invoice_id IS NULL 
+UNION SELECT 
+    gl.account_number, account_description, invoice_id
+FROM
+    general_ledger_accounts gl
+        RIGHT JOIN
+    invoice_line_items li ON gl.account_number = li.account_number
+WHERE
+    li.invoice_id IS NULL
+ORDER BY account_number;
+
 /* Use the union operator to generate a result set consisting of two columns from the vendors table:
 vendor_name and vendor_state. If the vendor is in Carlifonia the vendor state should be 'CA': 
-otherwisethe vendor_state value should be "outside CA'. Sort the result by vendor_name. */
+otherwise the vendor_state value should be "outside CA'. Sort the result by vendor_name. */
+SELECT 
+    vendor_name, 'CA' AS vendor_state
+FROM
+    vendors
+WHERE
+    vendor_state = 'CA' 
+UNION SELECT 
+    vendor_name, 'Outside CA' AS vendor_state
+FROM
+    vendors
+WHERE
+    vendor_state <> 'CA'
+ORDER BY vendor_name;
