@@ -239,3 +239,65 @@ WHERE
     invoice_total < 500
 ORDER BY invoice_number;
 
+# Full outer join using UNION
+SELECT 
+    last_name,
+    first_name,
+    invoice_total - payment_total - credit_total AS owes,
+    invoice_due_date
+FROM
+    vendor_contacts vc
+        LEFT JOIN
+    invoices i ON vc.vendor_id = i.vendor_id 
+UNION SELECT 
+    last_name,
+    first_name,
+    invoice_total - payment_total - credit_total AS owes,
+    invoice_due_date
+FROM
+    vendor_contacts vc
+        RIGHT JOIN
+    invoices i ON vc.vendor_id - i.vendor_id
+ORDER BY invoice_due_date DESC;
+
+# LABS
+/* Write a select statement that returns all columns from the vendors table inner joined
+with all columns from the invoices table. This should return 114 rows. */
+SELECT 
+    *
+FROM
+    vendors
+        JOIN
+    invoices USING (vendor_id);
+/* Write a select statement that returns these four columns: vendor_name, invoice_number, 
+invoice_date, balance_due (invoice_total - payment_total - credit_total). Return only (11)
+rows with a non-zero balance. Sort the results by vendor_name. */
+SELECT 
+    vendor_name,
+    invoice_number,
+    invoice_date,
+    invoice_total - payment_total - credit_total AS balance_due
+FROM
+    vendors v
+        JOIN
+    invoices i ON v.vendor_id = i.vendor_id
+WHERE
+    invoice_total - payment_total - credit_total > 0
+ORDER BY vendor_name;
+/* Write a select statement that returns these three columns: vendor_name, default_account,
+account_description. Return 1 row for each vendor(should be 122 rows). Sort by account_description, 
+then vendor_name. */
+select vendor_name, default_account, account_description from vendors v
+join general_ledger_account
+/* Write a select statement that returns these 5 columns: vendor_name, invoice_date, 
+invoice_number, invoice_sequence, line_item_amount. This should return 118 rows. Sort the 
+result by vendor_name, invoice_date, invoice_number and invoice_sequence. */
+/* Write a select statement that returns these 3 columns: vendor_id, vendor_name, 
+contact_name( concat vendors' first and last names). Return one row for each vendor whose 
+contact has the same last name. Sort the result by last names. */
+/* Write a select statement that returns these 3 columns: account_number, account_description,
+invoice_id. Return one row for each account number that has never been used. This should return
+54 rows. Remove the invoice_id column from the select clause. sort the result by account_number. */
+/* Use the union operator to generate a result set consisting of two columns from the vendors table:
+vendor_name and vendor_state. If the vendor is in Carlifonia the vendor state should be 'CA': 
+otherwisethe vendor_state value should be "outside CA'. Sort the result by vendor_name. */
