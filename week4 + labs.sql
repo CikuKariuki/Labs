@@ -367,3 +367,85 @@ FROM
 WHERE
     vendor_state <> 'CA'
 ORDER BY vendor_name;
+
+/* Write a SELECT statement that joins the Customers table to the Addresses table and returns 
+these columns: first_name, last_name, line1, city, state, zip_code. Return one row for each 
+address for the customer with an email address of allan.sherwood@yahoo.com Sort the result set 
+by the zip_code column in ascending sequence. */
+USE my_guitar_shop;
+
+SELECT 
+    first_name, last_name, line1, city, state, zip_code
+FROM
+    customers c
+        JOIN
+    addresses a ON c.customer_id = a.customer_id
+WHERE
+    c.email_address = 'allan.sherwood@yahoo.com'
+ORDER BY zip_code;
+
+/* Write a SELECT statement that joins the Customers table to the Addresses table and returns these 
+columns: first_name, last_name, line1, city, state, zip_code. Return one row for each customer, but 
+only return addresses that are the shipping address for a customer. Sort the result set by the 
+zip_code column in ascending sequence. */
+SELECT 
+    first_name, last_name, line1, city, state, zip_code
+FROM
+    customers c
+        JOIN
+    addresses a ON c.customer_id = a.customer_id
+WHERE
+    c.shipping_address_id = a.address_id
+ORDER BY zip_code;
+
+/* Write a SELECT statement that joins the Customers, Orders, Order_Items, and Products tables. This 
+statement should return these columns: last_name, first_name, order_date, product_name, item_price, 
+discount_amount, and quantity. Use aliases for the tables. Sort the final result set by the last_name, 
+order_date, and product_name columns. */
+SELECT 
+    last_name,
+    first_name,
+    order_date,
+    product_name,
+    item_price,
+    discount_amount,
+    quantity
+FROM
+    customers c
+        JOIN
+    orders o ON c.customer_id = o.customer_id
+        JOIN
+    order_items oi ON o.order_id = oi.order_id
+        JOIN
+    products p ON oi.product_id = p.product_id
+ORDER BY last_name , order_date , product_name;
+
+/* Use the UNION operator to generate a result set consisting of three columns from the Orders 
+table: ship_status( A calculated column that contains a value of SHIPPED or NOT SHIPPED), order_id,
+order_date If the order has a value in the ship_date column, the ship_status column should 
+contain a value of SHIPPED. Otherwise, it should contain a value of NOT SHIPPED. Sort the final 
+result set by the order_date column. */
+SELECT 
+    'Shipped' AS ship_status, order_id, order_date
+FROM
+    orders
+WHERE
+    ship_date IS NOT NULL 
+UNION SELECT 
+    'Not Shipped' AS ship_status, order_id, order_date
+FROM
+    orders
+WHERE
+    ship_date IS NULL;
+SELECT CURRENT_DATE() - '2022-01-01';
+
+/* Write a SELECT statement that returns the ProductName and ListPrice columns from the Products 
+table. Return one row for each product that has the same list price as another product. */
+SELECT 
+    p1.product_name, p1.list_price
+FROM
+    products p1
+        JOIN
+    products p2 ON p1.product_id <> p2.product_id
+        AND p1.list_price = p2.list_price
+ORDER BY list_price;
