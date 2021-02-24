@@ -154,3 +154,88 @@ FROM
         CROSS JOIN
     terms
 ORDER BY invoice_date;
+
+# UNION
+USE company;
+
+SELECT 
+    'Active' AS source,
+    invoice_number,
+    invoice_total,
+    invoice_date
+FROM
+    active_invoices
+WHERE
+    invoice_date > '2014-06-01' 
+UNION SELECT 
+    'Paid' AS source,
+    invoice_number,
+    invoice_total,
+    invoice_date
+FROM
+    paid_invoices
+WHERE
+    invoice_date > '2014-06-01'
+ORDER BY invoice_date;
+
+# Union with rows from the same table
+USE vendors;
+
+SELECT 
+    'Active' AS source,
+    invoice_number,
+    invoice_total,
+    invoice_date
+FROM
+    invoices
+WHERE
+    invoice_total - payment_total - credit_total > 0 
+UNION SELECT 
+    'Paid' AS source,
+    invoice_number,
+    invoice_total,
+    invoice_date
+FROM
+    invoices
+WHERE
+    invoice_total - payment_total - credit_total <= 0
+ORDER BY invoice_date;
+
+SELECT 
+    invoice_number,
+    vendor_name,
+    '33% Payment' AS payment_type,
+    invoice_total AS total,
+    invoice_total * 0.33 AS payment
+FROM
+    invoices i
+        JOIN
+    vendors v ON i.vendor_id = v.vendor_id
+WHERE
+    invoice_total > 10000 
+UNION SELECT 
+    invoice_number,
+    vendor_name,
+    '50% Payment' AS payment_type,
+    invoice_total AS total,
+    invoice_total * 0.5 AS payment
+FROM
+    invoices i
+        JOIN
+    vendors v ON i.vendor_id = v.vendor_id
+WHERE
+    invoice_total BETWEEN 500 AND 10000 
+UNION SELECT 
+    invoice_number,
+    vendor_name,
+    'Full amount' AS payment_type,
+    invoice_total AS total,
+    invoice_total AS payment
+FROM
+    invoices i
+        JOIN
+    vendors v USING (vendor_id)
+WHERE
+    invoice_total < 500
+ORDER BY invoice_number;
+
